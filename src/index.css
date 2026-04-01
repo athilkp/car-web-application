@@ -1,0 +1,222 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Variables ────────────────────────────────────── */
+:root {
+  --color-primary: #000666;
+  --color-secondary: #9f4200;
+  --color-tertiary-fixed: #a3f69c;
+  --nav-height: 64px;
+  --bottom-nav-height: 72px;
+  --max-width: 100%;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-blur: blur(20px);
+}
+
+/* ── Base Reset ────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8f9fb;
+  color: #191c1e;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+  overflow-x: hidden;
+  background: #f8f9fb;
+  box-shadow: 0 0 60px rgba(0, 6, 102, 0.1);
+}
+
+/* ── Material Symbols ──────────────────────────────────── */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  user-select: none;
+}
+
+.icon-fill {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ── Scrollbar Hide ────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Glass Nav ─────────────────────────────────────────── */
+.glass-nav {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+/* ── Button Press Effect ───────────────────────────────── */
+.btn-press {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  cursor: pointer;
+}
+.btn-press:active {
+  transform: scale(0.95);
+  opacity: 0.9;
+}
+
+/* ── Car Card ──────────────────────────────────────────── */
+.car-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+.car-card:active {
+  transform: scale(0.97);
+}
+
+/* ── Editorial Shadow ──────────────────────────────────── */
+.editorial-shadow {
+  box-shadow: 0 24px 48px -12px rgba(0, 6, 102, 0.08);
+}
+.editorial-shadow-sm {
+  box-shadow: 0 8px 24px -4px rgba(0, 6, 102, 0.06);
+}
+
+/* ── Hero Gradient ─────────────────────────────────────── */
+.hero-gradient {
+  background: linear-gradient(
+    to top,
+    rgba(0, 6, 102, 0.92) 0%,
+    rgba(0, 6, 102, 0.3) 50%,
+    transparent 100%
+  );
+}
+
+/* ── Featured Card Gradient ────────────────────────────── */
+.featured-gradient {
+  background: linear-gradient(135deg, #000666 0%, #1a237e 100%);
+}
+
+/* ── Skeleton Shimmer ──────────────────────────────────── */
+.shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    #e6e8ea 0%,
+    #f2f4f6 50%,
+    #e6e8ea 100%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+
+/* ── Tab Active ────────────────────────────────────────── */
+.tab-btn {
+  padding-bottom: 12px;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s ease, color 0.2s ease;
+  font-family: 'Manrope', sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #767683;
+}
+.tab-btn.active {
+  border-bottom-color: #9f4200;
+  color: #9f4200;
+}
+
+/* ── Page Transitions ──────────────────────────────────── */
+.page-enter {
+  animation: fadeUp 0.3s ease forwards;
+}
+
+/* ── Progress Ring ─────────────────────────────────────── */
+.progress-ring-track {
+  stroke: #eceef0;
+}
+.progress-ring-fill {
+  stroke-dasharray: 251;
+  stroke-dashoffset: calc(251 - (251 * var(--progress, 90)) / 100);
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  transition: stroke-dashoffset 0.6s ease;
+  stroke-linecap: round;
+}
+
+/* ── Map Grid ──────────────────────────────────────────── */
+.map-grid {
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 28px, #c6c5d4 28px, #c6c5d4 29px),
+    repeating-linear-gradient(90deg, transparent, transparent 28px, #c6c5d4 28px, #c6c5d4 29px);
+  opacity: 0.2;
+}
+
+/* ── Spec Chip ─────────────────────────────────────────── */
+.spec-chip {
+  background: #f2f4f6;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+}
+
+/* ── Status Badges ─────────────────────────────────────── */
+.badge-active {
+  background: #e6f4ea;
+  color: #1e7e34;
+}
+.badge-sold {
+  background: #f5f5f5;
+  color: #888;
+}
+
+/* ── Page Wrapper Padding ──────────────────────────────── */
+.page-wrapper {
+  padding-top: calc(var(--nav-height) + 16px);
+  padding-bottom: calc(var(--bottom-nav-height) + 16px);
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .page-wrapper {
+    padding-bottom: 32px;
+  }
+}
+
+/* ── Smooth image load ─────────────────────────────────── */
+img {
+  transition: opacity 0.3s ease;
+}
+img[src=""] {
+  opacity: 0;
+}
