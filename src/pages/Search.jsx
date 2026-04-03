@@ -5,7 +5,7 @@ import FilterChips from "../components/FilterChips";
 import SearchListingCard from "../components/SearchListingCard";
 import Icon from "../components/Icon";
 import AdvancedFilterModal from "../components/AdvancedFilterModal";
-import { searchFilters } from "../data/cars";
+import { searchFilters, matchesCategory } from "../data/cars";
 import { useData } from "../context/DataContext";
 import { useLocationContext } from "../context/LocationContext";
 
@@ -16,10 +16,12 @@ const Search = () => {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState({
     fuel: "All",
-    maxKm: 100000,
-    maxPrice: 50000000,
-    minYear: 2015,
-    maxYear: 2024,
+    maxKm: 500000,
+    maxPrice: 100000000,
+    minYear: 2010,
+    maxYear: 2030,
+    brand: "",
+    model: ""
   });
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -27,9 +29,11 @@ const Search = () => {
     // 1. Location
     const matchLocation = selectedCity === "All Locations" || c.location === selectedCity;
     // 2. Body Type
-    const matchCategory = activeCategory === "All Cars" || c.bodyType === activeCategory;
+    const matchCategory = matchesCategory(c, activeCategory);
     // 3. Adv Filters: Fuel
-    const matchFuel = advancedFilters.fuel === "All" || c.fuel === advancedFilters.fuel;
+    const matchFuel = advancedFilters.fuel === "All" || 
+                      c.fuel === advancedFilters.fuel || 
+                      (advancedFilters.fuel === "EV" && c.fuel === "Electric");
     // 4. Adv Filters: KM Driven
     const kmValue = parseInt((c.km || "0").replace(/,/g, ''), 10);
     const matchKm = kmValue <= advancedFilters.maxKm;
@@ -47,8 +51,12 @@ const Search = () => {
     const matchSearch = makeStr.toLowerCase().includes(query) || 
                           modelStr.toLowerCase().includes(query) ||
                           bodyTypeStr.toLowerCase().includes(query);
+                          
+    // 8. Adv Filters: Brand/Model 
+    const matchAdvBrand = advancedFilters.brand === "" || makeStr.toLowerCase().includes(advancedFilters.brand.toLowerCase());
+    const matchAdvModel = advancedFilters.model === "" || modelStr.toLowerCase().includes(advancedFilters.model.toLowerCase());
     
-    return matchLocation && matchCategory && matchFuel && matchKm && matchPrice && matchYear && matchSearch;
+    return matchLocation && matchCategory && matchFuel && matchKm && matchPrice && matchYear && matchSearch && matchAdvBrand && matchAdvModel;
   });
   return (
     <>
@@ -110,7 +118,7 @@ const Search = () => {
                   onClick={() => {
                     setSearchQuery("");
                     setActiveCategory("All Cars");
-                    setAdvancedFilters({ fuel: 'All', maxKm: 100000, maxPrice: 50000000, minYear: 2015, maxYear: 2024 });
+                    setAdvancedFilters({ fuel: 'All', maxKm: 500000, maxPrice: 100000000, minYear: 2010, maxYear: 2030, brand: "", model: "" });
                   }}
                   className="mt-4 text-primary font-bold text-xs"
                 >

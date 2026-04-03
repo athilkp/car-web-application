@@ -17,6 +17,22 @@
   --glass-blur: blur(20px);
 }
 
+/* ── Dealership Theme Override ────────────────────────── */
+.theme-dealer {
+  --color-primary: #2C2C2C; /* Dark Slate Gray */
+  --color-secondary: #5A5A5A; /* Dim Gray */
+}
+.theme-dealer .hero-gradient {
+  background: linear-gradient(to top, rgba(20, 20, 20, 0.95) 0%, rgba(20, 20, 20, 0.4) 50%, transparent 100%);
+}
+.theme-dealer .featured-gradient {
+  background: linear-gradient(135deg, #2C2C2C 0%, #171717 100%);
+}
+.theme-dealer .tab-btn.active {
+  border-bottom-color: #2C2C2C;
+  color: #2C2C2C;
+}
+
 /* ── Base Reset ────────────────────────────────────────── */
 *,
 *::before,

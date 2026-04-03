@@ -7,6 +7,19 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  const openLoginModal = () => setIsLoginModalOpen(true);
+  const closeLoginModal = () => setIsLoginModalOpen(false);
+
+  useEffect(() => {
+    // Dynamically update the app's CSS theme based on the active role
+    if (user && user.role === 'dealership') {
+      document.body.classList.add('theme-dealer');
+    } else {
+      document.body.classList.remove('theme-dealer');
+    }
+  }, [user]);
 
   useEffect(() => {
     // If auth is properly initialized, listen to firebase state changes
@@ -46,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = async (role) => {
+  const login = async (role, providedCompanyName = '') => {
     try {
       console.log("Attempting Google Sign-In for role:", role);
       if (!auth) {
@@ -54,36 +67,41 @@ export const AuthProvider = ({ children }) => {
       }
       
       const provider = new GoogleAuthProvider();
-      // Optional: force account selection
       provider.setCustomParameters({ prompt: 'select_account' });
       
       const result = await signInWithPopup(auth, provider);
       const firebaseUser = result.user;
-      console.log("Google Auth successful:", firebaseUser.email);
       
       const docRef = doc(db, "users", firebaseUser.uid);
       const docSnap = await getDoc(docRef);
       
       let finalProfile;
       if (!docSnap.exists()) {
-         console.log("Creating new cloud profile for user...");
          finalProfile = {
            uid: firebaseUser.uid,
            name: firebaseUser.displayName || 'Google User',
            email: firebaseUser.email,
            photo: firebaseUser.photoURL,
            role: role,
+           companyName: providedCompanyName,
            kycVerified: false,
            documentsPending: role === 'dealership'
          };
+         
          await setDoc(docRef, finalProfile);
       } else {
-         console.log("Existing user profile found in Firestore.");
          finalProfile = docSnap.data();
-         // If a user returns, we respect their stored role, or update it if they specifically picked a new one
-         if (finalProfile.role !== role) {
-            finalProfile.role = role;
-            await setDoc(docRef, { role }, { merge: true });
+         
+         // Update role/company if specifically logging in with a new role/name
+         const updates = {};
+         if (finalProfile.role !== role) updates.role = role;
+         if (providedCompanyName && finalProfile.companyName !== providedCompanyName) {
+            updates.companyName = providedCompanyName;
+         }
+
+         if (Object.keys(updates).length > 0) {
+            await setDoc(docRef, updates, { merge: true });
+            finalProfile = { ...finalProfile, ...updates };
          }
       }
       
@@ -91,20 +109,6 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error("Firebase Google Auth Error:", error.code, error.message);
-      
-      let errorMessage = `Google Sign-In Error (${error.code}): ${error.message}`;
-      
-      if (error.code === 'auth/popup-blocked') {
-        errorMessage = "Sign-in popup was blocked by your browser. Please allow popups for this site.";
-      } else if (error.code === 'auth/operation-not-allowed') {
-        errorMessage = "Google Sign-In is not enabled in your Firebase Console. Please enable it in Authentication -> Sign-in method.";
-      } else if (error.code === 'auth/unauthorized-domain') {
-        errorMessage = "This domain is not authorized in your Firebase Console. Add 'localhost' to Authentication -> Settings -> Authorized domains.";
-      } else if (error.code === 'auth/network-request-failed') {
-        errorMessage = "Network error. Please check your internet connection.";
-      }
-      
-      alert(errorMessage);
       return { success: false, error: error.message };
     }
   };
@@ -132,7 +136,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUserProfile }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUserProfile, isLoginModalOpen, openLoginModal, closeLoginModal }}>
       {children}
     </AuthContext.Provider>
   );

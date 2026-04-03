@@ -23,6 +23,29 @@ const AdvancedFilterModal = ({ isOpen, onClose, filters, setFilters }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-6">
+          {/* Brand & Model */}
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <h3 className="font-headline font-bold text-sm mb-2 text-on-surface">Brand</h3>
+              <input 
+                type="text"
+                placeholder="e.g. Toyota"
+                value={filters.brand}
+                onChange={e => setFilters(prev => ({ ...prev, brand: e.target.value }))}
+                className="w-full bg-surface-container py-2.5 px-4 rounded-xl border border-outline-variant/30 outline-none focus:border-primary/50 font-body text-sm text-on-surface"
+              />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-headline font-bold text-sm mb-2 text-on-surface">Model</h3>
+              <input 
+                type="text"
+                placeholder="e.g. Fortuner"
+                value={filters.model}
+                onChange={e => setFilters(prev => ({ ...prev, model: e.target.value }))}
+                className="w-full bg-surface-container py-2.5 px-4 rounded-xl border border-outline-variant/30 outline-none focus:border-primary/50 font-body text-sm text-on-surface"
+              />
+            </div>
+          </div>
           {/* Fuel Type */}
           <div>
             <h3 className="font-headline font-bold text-sm mb-3 text-on-surface">Fuel Type</h3>
@@ -105,7 +128,7 @@ const AdvancedFilterModal = ({ isOpen, onClose, filters, setFilters }) => {
         <div className="p-5 border-t border-surface-container-high flex gap-3">
           <button 
             onClick={() => {
-              setFilters({ fuel: 'All', maxKm: 100000, maxPrice: 50000000, minYear: 2015, maxYear: 2024 });
+              setFilters({ fuel: 'All', maxKm: 500000, maxPrice: 100000000, minYear: 2010, maxYear: 2030, brand: "", model: "" });
             }}
             className="flex-1 py-3.5 rounded-xl font-label font-bold text-on-surface text-sm btn-press bg-surface-container"
           >

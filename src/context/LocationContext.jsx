@@ -3,7 +3,7 @@ import { createContext, useState, useContext } from 'react';
 const LocationContext = createContext();
 
 export const LocationProvider = ({ children }) => {
-  const [selectedCity, setSelectedCity] = useState("New Delhi");
+  const [selectedCity, setSelectedCity] = useState("All Locations");
   return (
     <LocationContext.Provider value={{ selectedCity, setSelectedCity }}>
       {children}
