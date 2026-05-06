@@ -24,11 +24,15 @@ export const DataProvider = ({ children }) => {
       console.log("Forcing database wipe and rewrite...");
       getDocs(collection(db, "cars")).then((snap) => {
          snap.docs.forEach(async (d) => {
-            await deleteDoc(doc(db, "cars", d.id));
+            await deleteDoc(doc(db, "cars", d.id)).catch(e => {});
          });
          initialCars.forEach(async (car) => {
-            await setDoc(doc(db, "cars", car.id), car);
+            await setDoc(doc(db, "cars", car.id), car).catch(e => {});
          });
+         localStorage.setItem("force_sync_custom_cars_3", "true");
+      }).catch(err => {
+         console.warn("Could not force sync custom cars (possibly due to Firestore permissions). Using local data.", err.message);
+         // Mark as true anyway so it doesn't keep trying and failing
          localStorage.setItem("force_sync_custom_cars_3", "true");
       });
     }
@@ -76,6 +80,8 @@ export const DataProvider = ({ children }) => {
       // Sort manually since compound queries might require complex indexing
       dbNotifs.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
       setNotifications(dbNotifs);
+    }, (error) => {
+      console.error("Firestore notifications sync error:", error.message);
     });
 
     return () => unsubscribeNotifs();

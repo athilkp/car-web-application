@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import Icon from "./Icon";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocationContext } from "../context/LocationContext";
 import { useAuth } from "../context/AuthContext";
 import { useData } from "../context/DataContext";
@@ -26,6 +26,13 @@ const TopHeader = ({ title, showBack = false, showSearch = true, rightSlot }) =>
     setDealerStep(false);
     setDealerCompany("");
   };
+
+  useEffect(() => {
+    if (user && isLoginModalOpen) {
+      handleCloseModal();
+      navigate('/dashboard');
+    }
+  }, [user, isLoginModalOpen, navigate]);
 
   return (
     <>
@@ -227,9 +234,14 @@ const TopHeader = ({ title, showBack = false, showSearch = true, rightSlot }) =>
 
                 <div className="space-y-3">
                   <button 
-                    onClick={() => {
-                      login('individual');
-                      closeLoginModal();
+                    onClick={async () => {
+                      const res = await login('individual');
+                      if (res.success) {
+                        closeLoginModal();
+                        navigate('/dashboard');
+                      } else {
+                        alert('Login failed: ' + res.error);
+                      }
                     }}
                     className="w-full relative group overflow-hidden bg-surface-container-low hover:bg-primary-container/20 border border-outline-variant/40 hover:border-primary/50 transition-all rounded-2xl p-4 flex items-center gap-4 text-left"
                   >
@@ -295,9 +307,14 @@ const TopHeader = ({ title, showBack = false, showSearch = true, rightSlot }) =>
 
                 <button 
                   disabled={!dealerCompany.trim()}
-                  onClick={() => {
-                    login('dealership', dealerCompany.trim());
-                    handleCloseModal();
+                  onClick={async () => {
+                    const res = await login('dealership', dealerCompany.trim());
+                    if (res.success) {
+                      handleCloseModal();
+                      navigate('/dashboard');
+                    } else {
+                      alert('Login failed: ' + res.error);
+                    }
                   }}
                   className="w-full bg-[#1a1a1a] text-white py-4 rounded-full font-headline font-black text-sm btn-press shadow-xl disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2"
                 >

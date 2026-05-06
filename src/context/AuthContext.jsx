@@ -34,22 +34,52 @@ export const AuthProvider = ({ children }) => {
             if (docSnap.exists()) {
                setUser(docSnap.data());
             } else {
-               // A Google User somehow signed in, but bypassing our "login" button
-               // We build them a fallback generic individual account and sync it
-               const fallbackProfile = {
-                 uid: firebaseUser.uid,
-                 name: firebaseUser.displayName || 'Google User',
-                 email: firebaseUser.email,
-                 role: 'individual',
-                 photo: firebaseUser.photoURL,
-                 kycVerified: false,
-                 documentsPending: false
-               };
-               await setDoc(docRef, fallbackProfile);
-               setUser(fallbackProfile);
+               // A Google User somehow signed in, but bypassing our "login" button or the popup hung
+               // We build them a profile using pending role if available
+               setUser(prevUser => {
+                   const pendingRole = localStorage.getItem('motriva_pending_role') || (prevUser ? prevUser.role : 'individual');
+                   const pendingCompany = localStorage.getItem('motriva_pending_company') || (prevUser ? prevUser.companyName : '');
+                   
+                   const fallbackProfile = {
+                     uid: firebaseUser.uid,
+                     name: firebaseUser.displayName || 'Google User',
+                     email: firebaseUser.email,
+                     role: pendingRole,
+                     companyName: pendingCompany,
+                     photo: firebaseUser.photoURL,
+                     kycVerified: false,
+                     documentsPending: pendingRole === 'dealership'
+                   };
+                   
+                   // Attempt to save fallback profile if possible
+                   setDoc(docRef, fallbackProfile).catch(() => {});
+                   
+                   localStorage.removeItem('motriva_pending_role');
+                   localStorage.removeItem('motriva_pending_company');
+                   return fallbackProfile;
+               });
             }
           } catch (error) {
             console.error("Firestore user profile fetch failed", error);
+            if (error.code === 'permission-denied' || (error.message && error.message.includes('Missing or insufficient permissions'))) {
+               setUser(prevUser => {
+                   const pendingRole = localStorage.getItem('motriva_pending_role') || (prevUser ? prevUser.role : 'individual');
+                   const pendingCompany = localStorage.getItem('motriva_pending_company') || (prevUser ? prevUser.companyName : '');
+                   const mockProfile = {
+                     uid: firebaseUser.uid,
+                     name: firebaseUser.displayName || 'Google User',
+                     email: firebaseUser.email,
+                     role: pendingRole,
+                     companyName: pendingCompany,
+                     photo: firebaseUser.photoURL,
+                     kycVerified: false,
+                     documentsPending: pendingRole === 'dealership'
+                   };
+                   localStorage.removeItem('motriva_pending_role');
+                   localStorage.removeItem('motriva_pending_company');
+                   return mockProfile;
+               });
+            }
           }
         } else {
           setUser(null);
@@ -64,6 +94,13 @@ export const AuthProvider = ({ children }) => {
       console.log("Attempting Google Sign-In for role:", role);
       if (!auth) {
         throw new Error("Firebase Auth is not initialized. Check your firebase.js and console settings.");
+      }
+      
+      localStorage.setItem('motriva_pending_role', role);
+      if (providedCompanyName) {
+         localStorage.setItem('motriva_pending_company', providedCompanyName);
+      } else {
+         localStorage.removeItem('motriva_pending_company');
       }
       
       const provider = new GoogleAuthProvider();
@@ -106,9 +143,35 @@ export const AuthProvider = ({ children }) => {
       }
       
       setUser(finalProfile);
+      localStorage.removeItem('motriva_pending_role');
+      localStorage.removeItem('motriva_pending_company');
       return { success: true };
     } catch (error) {
       console.error("Firebase Google Auth Error:", error.code, error.message);
+      
+      // If the Google Auth succeeded but Firestore blocked us, gracefully fallback to local state
+      if (error.code === 'permission-denied' || (error.message && error.message.includes('Missing or insufficient permissions'))) {
+         console.warn("Firestore permissions blocked saving profile. Proceeding with local profile.");
+         setUser(prevUser => {
+             const pendingRole = localStorage.getItem('motriva_pending_role') || (prevUser ? prevUser.role : 'individual');
+             const pendingCompany = localStorage.getItem('motriva_pending_company') || (prevUser ? prevUser.companyName : '');
+             const mockProfile = {
+               uid: auth.currentUser?.uid || 'temp-uid',
+               name: auth.currentUser?.displayName || 'Google User',
+               email: auth.currentUser?.email || '',
+               photo: auth.currentUser?.photoURL || '',
+               role: pendingRole,
+               companyName: pendingCompany,
+               kycVerified: false,
+               documentsPending: pendingRole === 'dealership'
+             };
+             localStorage.removeItem('motriva_pending_role');
+             localStorage.removeItem('motriva_pending_company');
+             return mockProfile;
+         });
+         return { success: true };
+      }
+      
       return { success: false, error: error.message };
     }
   };
